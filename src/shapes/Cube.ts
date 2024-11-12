@@ -1,64 +1,115 @@
-import { BufferGeometry, Float32BufferAttribute, Mesh, MeshBasicMaterial, TextureLoader } from "three";
+import { BufferGeometry, Float32BufferAttribute, Mesh, MeshStandardMaterial, TextureLoader, DoubleSide } from "three";
 
-// Cargar la textura
+// Cargar la textura y el mapa de normales
 const textureLoader = new TextureLoader();
-const texture = textureLoader.load('/texturas.png'); // Cambia 'ruta_de_la_textura.jpg' por la ruta de tu imagen
+const texture = textureLoader.load('/rubi.png'); // Cambia la ruta según corresponda
+const normalMap = textureLoader.load('/rubi_normal.png'); // Cambia la ruta según corresponda
 
-// Crear la geometría del cubo con BufferGeometry
+// Parámetros del cubo
+const size = 2; // Tamaño de los lados del cubo
+
+// Crear la geometría del cubo
 const geometry = new BufferGeometry();
 
-// Vértices del cubo (8 vértices en total, 3 componentes por vértice: x, y, z)
+// Vértices del cubo (8 vértices en total)
 const vertices = new Float32Array([
-  // Frente
-  -2.5, -2.5,  2.5,  2.5, -2.5,  2.5,  2.5,  2.5,  2.5,  -2.5,  2.5,  2.5,
-  // Atrás
-  -2.5, -2.5, -2.5,  -2.5,  2.5, -2.5,  2.5,  2.5, -2.5,  2.5, -2.5, -2.5,
-  // Arriba
-  -2.5,  2.5, -2.5,  -2.5,  2.5,  2.5,  2.5,  2.5,  2.5,  2.5,  2.5, -2.5,
-  // Abajo
-  -2.5, -2.5, -2.5,  2.5, -2.5, -2.5,  2.5, -2.5,  2.5,  -2.5, -2.5,  2.5,
-  // Derecha
-  2.5, -2.5, -2.5,  2.5,  2.5, -2.5,  2.5,  2.5,  2.5,  2.5, -2.5,  2.5,
-  // Izquierda
-  -2.5, -2.5, -2.5,  -2.5, -2.5,  2.5,  -2.5,  2.5,  2.5,  -2.5,  2.5, -2.5
+    // Cara frontal
+    -size, -size,  size,
+     size, -size,  size,
+     size,  size,  size,
+    -size,  size,  size,
+    // Cara trasera
+    -size, -size, -size,
+    -size,  size, -size,
+     size,  size, -size,
+     size, -size, -size,
+    // Cara superior
+    -size,  size, -size,
+    -size,  size,  size,
+     size,  size,  size,
+     size,  size, -size,
+    // Cara inferior
+    -size, -size, -size,
+     size, -size, -size,
+     size, -size,  size,
+    -size, -size,  size,
+    // Cara derecha
+     size, -size, -size,
+     size,  size, -size,
+     size,  size,  size,
+     size, -size,  size,
+    // Cara izquierda
+    -size, -size, -size,
+    -size, -size,  size,
+    -size,  size,  size,
+    -size,  size, -size
+]);
+
+// Normales para el cubo (una normal por vértice)
+const normals = new Float32Array([
+    // Cara frontal
+    0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+    // Cara trasera
+    0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+    // Cara superior
+    0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+    // Cara inferior
+    0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+    // Cara derecha
+    1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+    // Cara izquierda
+    -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0
 ]);
 
 // Índices de los triángulos que forman las caras del cubo
 const indices = [
-  0, 1, 2,   2, 3, 0, // Frente
-  4, 5, 6,   6, 7, 4, // Atrás
-  8, 9, 10,  10, 11, 8, // Arriba
-  12, 13, 14, 14, 15, 12, // Abajo
-  16, 17, 18, 18, 19, 16, // Derecha
-  20, 21, 22, 22, 23, 20  // Izquierda
+    // Cara frontal
+    0, 1, 2, 0, 2, 3,
+    // Cara trasera
+    4, 5, 6, 4, 6, 7,
+    // Cara superior
+    8, 9, 10, 8, 10, 11,
+    // Cara inferior
+    12, 13, 14, 12, 14, 15,
+    // Cara derecha
+    16, 17, 18, 16, 18, 19,
+    // Cara izquierda
+    20, 21, 22, 20, 22, 23
 ];
 
-// Coordenadas UV para usar la octava textura en todas las caras
+// Coordenadas UV
 const uvs = new Float32Array([
-  // Frontal
-  2/3, 2/3,  1, 2/3,  1, 1,  2/3, 1,
-  // Atrás
-  2/3, 2/3,  1, 2/3,  1, 1,  2/3, 1,
-  // Arriba
-  2/3, 2/3,  1, 2/3,  1, 1,  2/3, 1,
-  // Abajo
-  2/3, 2/3,  1, 2/3,  1, 1,  2/3, 1,
-  // Derecha
-  2/3, 2/3,  1, 2/3,  1, 1,  2/3, 1,
-  // Izquierda
-  2/3, 2/3,  1, 2/3,  1, 1,  2/3, 1
+    // Cara frontal
+    0, 0, 1, 0, 1, 1, 0, 1,
+    // Cara trasera
+    0, 0, 1, 0, 1, 1, 0, 1,
+    // Cara superior
+    0, 0, 1, 0, 1, 1, 0, 1,
+    // Cara inferior
+    0, 0, 1, 0, 1, 1, 0, 1,
+    // Cara derecha
+    0, 0, 1, 0, 1, 1, 0, 1,
+    // Cara izquierda
+    0, 0, 1, 0, 1, 1, 0, 1
 ]);
 
 // Añadir los atributos a la geometría
 geometry.setIndex(indices);
 geometry.setAttribute('position', new Float32BufferAttribute(vertices, 3));
+geometry.setAttribute('normal', new Float32BufferAttribute(normals, 3));
 geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
-geometry.scale(0.5, 0.5, 0.5);
 
-// Crear el material con la textura
-const material = new MeshBasicMaterial({ map: texture });
+// Crear el material con la textura y el mapa de normales
+const material = new MeshStandardMaterial({
+    map: texture,
+    normalMap: normalMap,
+    side: DoubleSide // Para que se dibuje en ambas caras
+});
 
 // Crear el cubo con la geometría y el material
 const cube = new Mesh(geometry, material);
+
+// Colocar el cubo si es necesario
+cube.position.set(0, 0, 0); // Centrar el cubo en el origen
 
 export default cube;

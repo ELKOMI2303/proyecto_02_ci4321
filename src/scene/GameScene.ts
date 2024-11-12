@@ -12,8 +12,10 @@ import Vehicle from "../entyties/Vehicle";
 import cube from "../shapes/Cube";
 import skybox from "../shapes/Skybox";
 import plane from "../shapes/plane";
-// import cylinder from "../shapes/Pyramid";
-import pyramid from "../shapes/Pyramid";
+// import cylinder from "../shapes/cone";
+import cone from "../shapes/Cone";
+import sphere from "../shapes/Esphere";
+import cylinder from "../shapes/Cylinder";
 
 class GameScene {
   private static _instance = new GameScene();
@@ -37,7 +39,7 @@ class GameScene {
   private cameraHeight: number = 25; // Altura de la cámara sobre el vehículo
   private isThirdPerson: boolean = false; // Estado para la cámara en tercera persona
   private cubeLives: number = 3;
-  private pyramidLives: number = 3;
+  private coneLives: number = 3;
 
   // Estado para el modo de disparo
   private shootMode: "rectilinear" | "parabolic" = "rectilinear";
@@ -71,19 +73,21 @@ class GameScene {
     const ambientLight = new AmbientLight(0x808080); // Luz ambiental más intensa
     this._scene.add(ambientLight);
 
-    const directionalLight = new DirectionalLight(0xffffff, 2); // Incrementar la intensidad de la luz direccional
-    directionalLight.position.set(50, 100, 50); // Posición para simular el sol en el cielo
+    const directionalLight = new DirectionalLight(0xffffff, 1.5); // Ajustar la intensidad
+    directionalLight.position.set(15, 100, -100); // Ajustar la posición para iluminar desde arriba
+    directionalLight.target.position.set(0, 0, 0); // Apuntar al centro de las figuras
     directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.set(2048, 2048); // Mayor resolución de sombras
+    directionalLight.shadow.mapSize.set(2048, 2048);
     directionalLight.shadow.camera.near = 0.5;
     directionalLight.shadow.camera.far = 500;
-
     this._scene.add(directionalLight);
+    this._scene.add(directionalLight.target);
 
     const pointLight = new PointLight(0xffffff, 1); // Luz puntual adicional cerca de la esfera
-    pointLight.position.set(0, 5, 0); // Ajustar la posición según sea necesario
+    pointLight.position.set(15, 5, 10);
     this._scene.add(pointLight);
-  }
+}
+
 
   private setupControls() {
     this._controls = new OrbitControls(this._camera, this._renderer.domElement);
@@ -159,9 +163,16 @@ class GameScene {
 
     // Añadir el cubo a la escena
     this._scene.add(cube);
-    this._scene.add(pyramid);
+    this._scene.add(cone);
 
-    pyramid.position.set(20, 1.5, 10);
+    this._scene.add(cylinder)
+
+    cone.position.set(30, 1.5, 10);
+
+
+    cylinder.position.set(15, 3, 10);
+
+    //sphere.position.set(15, 3, 10);
 
     // Opcional: Ajustar la posición del cubo si es necesario
     cube.position.set(0, 1.5, 10); // Mueve el cubo en la escena según lo necesites
@@ -220,7 +231,7 @@ class GameScene {
 
     // Supón que el cubo tiene un tamaño fijo y toma el radio como la mitad de su dimensión
     const cubeRadius = cube.geometry.boundingSphere?.radius || 1; // Radio del cubo
-    const pyramidRadius = pyramid.geometry.boundingSphere?.radius || 1.5; // Radio de la pirámide
+    const coneRadius = cone.geometry.boundingSphere?.radius || 1.5; // Radio de la pirámide
 
     projectiles.forEach((projectile) => {
       // Supón que el proyectil tiene una geometría esférica
@@ -229,7 +240,7 @@ class GameScene {
 
       // Suma de los radios de ambos objetos
       const combinedRadiusCube = cubeRadius + projectileRadius;
-      const combinedRadiusPyramid = pyramidRadius + projectileRadius;
+      const combinedRadiuscone = coneRadius + projectileRadius;
 
       // Calcula la distancia entre el proyectil y el cubo
       const distanceToCube = this.distanceBetween(
@@ -238,9 +249,9 @@ class GameScene {
       );
 
       // Calcula la distancia entre el proyectil y la pirámide
-      const distanceToPyramid = this.distanceBetween(
+      const distanceTocone = this.distanceBetween(
         projectile.mesh.position,
-        pyramid.position
+        cone.position
       );
 
       // Verifica si la distancia es menor o igual a la suma de los radios del cubo
@@ -267,24 +278,24 @@ class GameScene {
         }
       } else if (
         projectile.active &&
-        distanceToPyramid <= combinedRadiusPyramid &&
-        this.pyramidLives > 0
+        distanceTocone <= combinedRadiuscone &&
+        this.coneLives > 0
       ) {
-        console.log("Hit on the pyramid!");
-        this.pyramidLives -= 1;
-        pyramid.material.color.setHex(0xff0000);
+        console.log("Hit on the cone!");
+        this.coneLives -= 1;
+        cone.material.color.setHex(0xff0000);
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
 
         setTimeout(() => {
-          if (this.pyramidLives > 0) {
-            pyramid.material.color.setHex(0x00ff00);
+          if (this.coneLives > 0) {
+            cone.material.color.setHex(0x00ff00);
           }
         }, 200);
 
-        if (this.pyramidLives <= 0) {
-          this._scene.remove(pyramid);
-          console.log("Pyramid destroyed!");
+        if (this.coneLives <= 0) {
+          this._scene.remove(cone);
+          console.log("cone destroyed!");
         }
       } else if (projectile.active && projectile.mesh.position.y <= 0) {
         console.log("Hit on the ground!");
