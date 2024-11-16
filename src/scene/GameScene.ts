@@ -44,6 +44,7 @@ class GameScene {
   private isThirdPerson: boolean = false; // Estado para la cámara en tercera persona
   private cubeLives: number = 3;
   private coneLives: number = 3;
+  private obstaclesRemaining: number = 2;
   private _overlayCamera: OrthographicCamera;
   private _overlayScene: Scene;
 
@@ -100,58 +101,60 @@ class GameScene {
   }
 
   private createOverlayElements() {
-    // Crear los textos para "Vida del Cubo" y "Obstáculos Restantes"
-    this.cubeLivesText = this.createTextMesh("Vida del Cubo: 3");
-    this.cubeLivesText.position.set(
-      -this._width / 2 + 100,
-      this._height / 2 - 50,
-      0
-    );
 
-    this.coneLivesText = this.createTextMesh("Vida del Cono: 3");
-    this.coneLivesText.position.set(
-      -this._width / 2 + 100,
+    this.obstaclesRemainingText = this.createTextMesh(
+      `Obstáculos Restantes: ${this.obstaclesRemaining}`
+    );
+    this.obstaclesRemainingText.position.set(
+      -this._width / 2 + 200,
       this._height / 2 - 90,
       0
     );
 
-    this.obstaclesRemainingText = this.createTextMesh(
-      "Obstáculos Restantes: 2"
+    // Crear los textos para "Vida del Cubo" y "Obstáculos Restantes"
+    this.cubeLivesText = this.createTextMesh(`Vida del Cubo: ${this.cubeLives}`);
+    this.cubeLivesText.position.set(
+      -this._width / 2 + 200,
+      this._height / 2 - 120,
+      0
     );
-    this.obstaclesRemainingText.position.set(
-      -this._width / 2 + 100,
-      this._height / 2 - 100,
+
+    this.coneLivesText = this.createTextMesh(`Vida del Cono: ${this.coneLives}`);
+    this.coneLivesText.position.set(
+      -this._width / 2 + 200,
+      this._height / 2 - 150,
       0
     );
 
     // Crear barras de energía
     this.cubeEnergyBar = this.createEnergyBar();
     this.cubeEnergyBar.position.set(
-      -this._width / 2 + 250,
-      this._height / 2 - 80,
+      -this._width / 2 + 420,
+      this._height / 2 - 70,
       0
     );
 
     this.coneEnergyBar = this.createEnergyBar();
     this.coneEnergyBar.position.set(
-      -this._width / 2 + 250,
-      this._height / 2 - 130,
+      -this._width / 2 + 420,
+      this._height / 2 - 100,
       0
     );
 
     // Añadir los elementos a la escena del overlay
     this._overlayScene.add(
-      this.cubeLivesText,
       this.obstaclesRemainingText,
+      this.cubeLivesText,
+      this.coneLivesText,
       this.cubeEnergyBar,
-      this.coneEnergyBar
+      this.coneEnergyBar,
     );
   }
 
   private createTextMesh(text: string): Mesh {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d")!;
-    context.font = "24px Arial";
+    context.font = "20px Arial";
     context.fillStyle = "white";
     context.fillText(text, 10, 30);
 
@@ -375,6 +378,7 @@ class GameScene {
       ) {
         console.log("Hit on the cube!");
         this.cubeLives -= 1;
+        this.updateOverlay(); // Actualizar la interfaz
         cube.material.color.setHex(0xff0000);
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
@@ -387,6 +391,7 @@ class GameScene {
 
         if (this.cubeLives <= 0) {
           this._scene.remove(cube);
+          this.obstaclesRemaining -= 1;
           console.log("Cube destroyed!");
         }
       } else if (
@@ -396,6 +401,7 @@ class GameScene {
       ) {
         console.log("Hit on the cone!");
         this.coneLives -= 1;
+        this.updateOverlay(); // Actualizar la interfaz
         cone.material.color.setHex(0xff0000);
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
@@ -408,6 +414,7 @@ class GameScene {
 
         if (this.coneLives <= 0) {
           this._scene.remove(cone);
+          this.obstaclesRemaining -= 1;
           console.log("cone destroyed!");
         }
       } else if (projectile.active && projectile.mesh.position.y <= 0) {
@@ -417,6 +424,25 @@ class GameScene {
       }
     });
   }
+
+  private updateOverlay() {
+    // Actualizar el texto de la vida del cubo
+    this.cubeLivesText = this.createTextMesh(`Vida del Cubo: ${this.cubeLives}`);
+    this._overlayScene.add(this.cubeLivesText);
+  
+    // Actualizar la barra de energía del cubo
+    const cubeEnergyPercentage = this.cubeLives / 3; // 3 es la vida máxima del cubo
+    this.cubeEnergyBar.scale.x = cubeEnergyPercentage;
+  
+    // Actualizar el texto de la vida del cono
+    this.coneLivesText = this.createTextMesh(`Vida del Cono: ${this.coneLives}`);
+    this._overlayScene.add(this.coneLivesText);
+  
+    // Actualizar la barra de energía del cono
+    const coneEnergyPercentage = this.coneLives / 3; // 3 es la vida máxima del cono
+    this.coneEnergyBar.scale.x = coneEnergyPercentage;
+  }
+  
 }
 
 export default GameScene;
