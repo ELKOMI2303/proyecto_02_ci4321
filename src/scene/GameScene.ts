@@ -6,6 +6,11 @@ import {
   DirectionalLight,
   Vector3,
   PointLight,
+  Mesh,
+  OrthographicCamera,
+  CanvasTexture,
+  MeshBasicMaterial,
+  PlaneGeometry,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Vehicle from "../entyties/Vehicle";
@@ -13,19 +18,11 @@ import cube from "../shapes/Cube";
 import skybox from "../shapes/Skybox";
 import plane from "../shapes/plane";
 // import cylinder from "../shapes/cone";
-import cone from "../shapes/Cone";
+import cone from '../shapes/Cone';
 import sphere from "../shapes/Esphere";
 import cylinder from "../shapes/Cylinder";
 
 class GameScene {
-  private remainingObstaclesElement = document.getElementById(
-    "remaining-obstacles"
-  );
-  private cubeLivesElement = document.getElementById("cube-lives");
-  private coneLivesElement = document.getElementById("cone-lives");
-
-  private remainingObstacles: number = 2; // Número de obstáculos inicial
-
   private static _instance = new GameScene();
   public static get instance() {
     return this._instance;
@@ -42,12 +39,20 @@ class GameScene {
   private _vehicle: Vehicle;
   private _controls: OrbitControls;
   private lastTime: number = 0;
-  private cubeHits: number = 0;
   private cameraDistance: number = 50; // Distancia detrás del vehículo
   private cameraHeight: number = 25; // Altura de la cámara sobre el vehículo
   private isThirdPerson: boolean = false; // Estado para la cámara en tercera persona
   private cubeLives: number = 3;
   private coneLives: number = 3;
+  private _overlayCamera: OrthographicCamera;
+  private _overlayScene: Scene;
+
+  // Elementos de la interfaz
+  private cubeLivesText!: Mesh;
+  private coneLivesText!: Mesh;
+  private obstaclesRemainingText!: Mesh;
+  private cubeEnergyBar!: Mesh;
+  private coneEnergyBar!: Mesh;
 
   // Estado para el modo de disparo
   private shootMode: "rectilinear" | "parabolic" = "rectilinear";
@@ -74,9 +79,94 @@ class GameScene {
     this.addLights();
     this.setupControls();
 
+    // Configurar la cámara ortográfica para el overlay (2D)
+    this._overlayCamera = new OrthographicCamera(
+      -this._width / 2,
+      this._width / 2,
+      this._height / 2,
+      -this._height / 2,
+      1,
+      10
+    );
+    this._overlayCamera.position.z = 5;
+
+    this._overlayScene = new Scene();
+
+    this.createOverlayElements();
+    window.addEventListener("resize", this.onResize);
+
     this._vehicle = new Vehicle();
     this._scene.add(this._vehicle.group);
   }
+
+  private createOverlayElements() {
+    // Crear los textos para "Vida del Cubo" y "Obstáculos Restantes"
+    this.cubeLivesText = this.createTextMesh("Vida del Cubo: 3");
+    this.cubeLivesText.position.set(
+      -this._width / 2 + 100,
+      this._height / 2 - 50,
+      0
+    );
+
+    this.coneLivesText = this.createTextMesh("Vida del Cono: 3");
+    this.coneLivesText.position.set(
+      -this._width / 2 + 100,
+      this._height / 2 - 90,
+      0
+    );
+
+    this.obstaclesRemainingText = this.createTextMesh(
+      "Obstáculos Restantes: 2"
+    );
+    this.obstaclesRemainingText.position.set(
+      -this._width / 2 + 100,
+      this._height / 2 - 100,
+      0
+    );
+
+    // Crear barras de energía
+    this.cubeEnergyBar = this.createEnergyBar();
+    this.cubeEnergyBar.position.set(
+      -this._width / 2 + 250,
+      this._height / 2 - 80,
+      0
+    );
+
+    this.coneEnergyBar = this.createEnergyBar();
+    this.coneEnergyBar.position.set(
+      -this._width / 2 + 250,
+      this._height / 2 - 130,
+      0
+    );
+
+    // Añadir los elementos a la escena del overlay
+    this._overlayScene.add(
+      this.cubeLivesText,
+      this.obstaclesRemainingText,
+      this.cubeEnergyBar,
+      this.coneEnergyBar
+    );
+  }
+
+  private createTextMesh(text: string): Mesh {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d")!;
+    context.font = "24px Arial";
+    context.fillStyle = "white";
+    context.fillText(text, 10, 30);
+
+    const texture = new CanvasTexture(canvas);
+    const material = new MeshBasicMaterial({ map: texture, transparent: true });
+    const geometry = new PlaneGeometry(canvas.width, canvas.height);
+    return new Mesh(geometry, material);
+  }
+
+  private createEnergyBar(): Mesh {
+    const geometry = new PlaneGeometry(200, 20);
+    const material = new MeshBasicMaterial({ color: "green" });
+    return new Mesh(geometry, material);
+  }
+
   private addLights() {
     const ambientLight = new AmbientLight(0x808080); // Luz ambiental más intensa
     this._scene.add(ambientLight);
@@ -112,6 +202,18 @@ class GameScene {
     this._renderer.setSize(this._width, this._height);
     this._camera.aspect = this._width / this._height;
     this._camera.updateProjectionMatrix();
+  };
+
+  private onResize = () => {
+    this._width = window.innerWidth;
+    this._height = window.innerHeight;
+    this._renderer.setSize(this._width, this._height);
+
+    this._overlayCamera.left = -this._width / 2;
+    this._overlayCamera.right = this._width / 2;
+    this._overlayCamera.top = this._height / 2;
+    this._overlayCamera.bottom = -this._height / 2;
+    this._overlayCamera.updateProjectionMatrix();
   };
 
   private onKeyDown = (event: KeyboardEvent) => {
@@ -205,12 +307,14 @@ class GameScene {
         this._controls.update(); // Actualiza los controles si está en primera persona
       }
 
-      this.cameraOverLay();
-
       this._vehicle.update(delta / 1000); // Pasar delta en segundos
       this.checkCollisions();
-
+      this._renderer.autoClear = true;
       this._renderer.render(this._scene, this._camera);
+
+      // Renderizar la interfaz de usuario (overlay) encima
+      this._renderer.autoClear = false;
+      this._renderer.render(this._overlayScene, this._overlayCamera);
     }
   };
 
@@ -233,13 +337,6 @@ class GameScene {
     // Establecer la posición de la cámara
     this._camera.position.copy(cameraPosition);
     this._camera.lookAt(vehiclePosition); // Asegúrate de que la cámara esté mirando al vehículo
-  }
-
-  private cameraOverLay() {
-    const overlay = document.getElementById("overlay");
-    if (overlay) {
-      overlay.style.display = this.isThirdPerson ? "block" : "none";
-    }
   }
 
   private checkCollisions() {
@@ -278,8 +375,6 @@ class GameScene {
       ) {
         console.log("Hit on the cube!");
         this.cubeLives -= 1;
-        this.updateEnergyBar(this.cubeLives, "cube");
-        this.updateOverlay();
         cube.material.color.setHex(0xff0000);
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
@@ -292,8 +387,6 @@ class GameScene {
 
         if (this.cubeLives <= 0) {
           this._scene.remove(cube);
-          this.remainingObstacles -= 1;
-          this.updateOverlay();
           console.log("Cube destroyed!");
         }
       } else if (
@@ -303,8 +396,6 @@ class GameScene {
       ) {
         console.log("Hit on the cone!");
         this.coneLives -= 1;
-        this.updateEnergyBar(this.coneLives, "cone");
-        this.updateOverlay();
         cone.material.color.setHex(0xff0000);
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
@@ -317,39 +408,14 @@ class GameScene {
 
         if (this.coneLives <= 0) {
           this._scene.remove(cone);
-          this.remainingObstacles -= 1;
-          this.updateOverlay();
           console.log("cone destroyed!");
         }
       } else if (projectile.active && projectile.mesh.position.y <= 0) {
         console.log("Hit on the ground!");
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
-        this.updateOverlay();
       }
     });
-  }
-
-  private updateEnergyBar(energy: number, type: string) {
-    const energyBar = document.getElementById("energy-bar-" + type);
-    if (energyBar) {
-      const energyPercentage = Math.max(0, (energy / 3) * 100); // Calcula en base a las vidas
-      energyBar.style.width = `${energyPercentage}%`;
-      energyBar.style.backgroundColor = energy > 1 ? "green" : "red";
-    }
-  }
-
-  private updateOverlay() {
-    if (this.remainingObstaclesElement) {
-      this.remainingObstaclesElement.textContent =
-        this.remainingObstacles.toString();
-    }
-    if (this.cubeLivesElement) {
-      this.cubeLivesElement.textContent = this.cubeLives.toString();
-    }
-    if (this.coneLivesElement) {
-      this.coneLivesElement.textContent = this.coneLives.toString();
-    }
   }
 }
 
