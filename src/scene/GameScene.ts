@@ -18,6 +18,14 @@ import sphere from "../shapes/Esphere";
 import cylinder from "../shapes/Cylinder";
 
 class GameScene {
+  private remainingObstaclesElement = document.getElementById(
+    "remaining-obstacles"
+  );
+  private cubeLivesElement = document.getElementById("cube-lives");
+  private coneLivesElement = document.getElementById("cone-lives");
+
+  private remainingObstacles: number = 2; // Número de obstáculos inicial
+
   private static _instance = new GameScene();
   public static get instance() {
     return this._instance;
@@ -86,8 +94,7 @@ class GameScene {
     const pointLight = new PointLight(0xffffff, 1); // Luz puntual adicional cerca de la esfera
     pointLight.position.set(15, 5, 10);
     this._scene.add(pointLight);
-}
-
+  }
 
   private setupControls() {
     this._controls = new OrbitControls(this._camera, this._renderer.domElement);
@@ -165,10 +172,9 @@ class GameScene {
     this._scene.add(cube);
     this._scene.add(cone);
 
-    this._scene.add(cylinder)
+    this._scene.add(cylinder);
 
     cone.position.set(30, 1.5, 10);
-
 
     cylinder.position.set(15, 3, 10);
 
@@ -188,23 +194,25 @@ class GameScene {
     // Limitar a 30 FPS
     const fps = 30;
     const interval = 1000 / fps;
-    const delta = (time - this.lastTime);
+    const delta = time - this.lastTime;
 
     if (delta > interval) {
-        this.lastTime = time - (delta % interval);  // Ajustar el tiempo para evitar acumulación de retrasos
+      this.lastTime = time - (delta % interval); // Ajustar el tiempo para evitar acumulación de retrasos
 
-        if (this.isThirdPerson) {
-            this.updateCameraPosition(); // Actualizar posición de la cámara en tercera persona
-        } else {
-            this._controls.update(); // Actualiza los controles si está en primera persona
-        }
+      if (this.isThirdPerson) {
+        this.updateCameraPosition(); // Actualizar posición de la cámara en tercera persona
+      } else {
+        this._controls.update(); // Actualiza los controles si está en primera persona
+      }
 
-        this._vehicle.update(delta / 1000);  // Pasar delta en segundos
-        this.checkCollisions();
+      this.cameraOverLay();
 
-        this._renderer.render(this._scene, this._camera);
+      this._vehicle.update(delta / 1000); // Pasar delta en segundos
+      this.checkCollisions();
+
+      this._renderer.render(this._scene, this._camera);
     }
-};
+  };
 
   // Método para actualizar la posición de la cámara en tercera persona
   private updateCameraPosition() {
@@ -226,6 +234,14 @@ class GameScene {
     this._camera.position.copy(cameraPosition);
     this._camera.lookAt(vehiclePosition); // Asegúrate de que la cámara esté mirando al vehículo
   }
+
+  private cameraOverLay() {
+    const overlay = document.getElementById("overlay");
+    if (overlay) {
+      overlay.style.display = this.isThirdPerson ? "block" : "none";
+    }
+  }
+
   private checkCollisions() {
     const projectiles = this._vehicle.getProjectiles();
 
@@ -262,6 +278,8 @@ class GameScene {
       ) {
         console.log("Hit on the cube!");
         this.cubeLives -= 1;
+        this.updateEnergyBar(this.cubeLives, "cube");
+        this.updateOverlay();
         cube.material.color.setHex(0xff0000);
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
@@ -274,6 +292,8 @@ class GameScene {
 
         if (this.cubeLives <= 0) {
           this._scene.remove(cube);
+          this.remainingObstacles -= 1;
+          this.updateOverlay();
           console.log("Cube destroyed!");
         }
       } else if (
@@ -283,6 +303,8 @@ class GameScene {
       ) {
         console.log("Hit on the cone!");
         this.coneLives -= 1;
+        this.updateEnergyBar(this.coneLives, "cone");
+        this.updateOverlay();
         cone.material.color.setHex(0xff0000);
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
@@ -295,14 +317,39 @@ class GameScene {
 
         if (this.coneLives <= 0) {
           this._scene.remove(cone);
+          this.remainingObstacles -= 1;
+          this.updateOverlay();
           console.log("cone destroyed!");
         }
       } else if (projectile.active && projectile.mesh.position.y <= 0) {
         console.log("Hit on the ground!");
         this._scene.remove(projectile.mesh);
         projectile.deactivate();
+        this.updateOverlay();
       }
     });
+  }
+
+  private updateEnergyBar(energy: number, type: string) {
+    const energyBar = document.getElementById("energy-bar-" + type);
+    if (energyBar) {
+      const energyPercentage = Math.max(0, (energy / 3) * 100); // Calcula en base a las vidas
+      energyBar.style.width = `${energyPercentage}%`;
+      energyBar.style.backgroundColor = energy > 1 ? "green" : "red";
+    }
+  }
+
+  private updateOverlay() {
+    if (this.remainingObstaclesElement) {
+      this.remainingObstaclesElement.textContent =
+        this.remainingObstacles.toString();
+    }
+    if (this.cubeLivesElement) {
+      this.cubeLivesElement.textContent = this.cubeLives.toString();
+    }
+    if (this.coneLivesElement) {
+      this.coneLivesElement.textContent = this.coneLives.toString();
+    }
   }
 }
 
