@@ -18,8 +18,8 @@ import cube from "../shapes/Cube";
 import skybox from "../shapes/Skybox";
 import plane from "../shapes/plane";
 // import cylinder from "../shapes/cone";
-import cone from '../shapes/Cone';
-import sphere from "../shapes/Esphere";
+import cone from "../shapes/Cone";
+// import sphere from "../shapes/Esphere";
 import cylinder from "../shapes/Cylinder";
 
 class GameScene {
@@ -44,16 +44,19 @@ class GameScene {
   private isThirdPerson: boolean = false; // Estado para la cámara en tercera persona
   private cubeLives: number = 3;
   private coneLives: number = 3;
-  private obstaclesRemaining: number = 2;
+  private cylinderLives: number = 3;
+  private obstaclesRemaining: number = 3;
   private _overlayCamera: OrthographicCamera;
   private _overlayScene: Scene;
 
   // Elementos de la interfaz
   private cubeLivesText!: Mesh;
   private coneLivesText!: Mesh;
+  private cylinderLivesText!: Mesh;
   private obstaclesRemainingText!: Mesh;
   private cubeEnergyBar!: Mesh;
   private coneEnergyBar!: Mesh;
+  private cylinderEnergyBar!: Mesh;
 
   // Estado para el modo de disparo
   private shootMode: "rectilinear" | "parabolic" = "rectilinear";
@@ -101,7 +104,6 @@ class GameScene {
   }
 
   private createOverlayElements() {
-
     this.obstaclesRemainingText = this.createTextMesh(
       `Obstáculos Restantes: ${this.obstaclesRemaining}`
     );
@@ -112,17 +114,30 @@ class GameScene {
     );
 
     // Crear los textos para "Vida del Cubo" y "Obstáculos Restantes"
-    this.cubeLivesText = this.createTextMesh(`Vida del Cubo: ${this.cubeLives}`);
+    this.cubeLivesText = this.createTextMesh(
+      `Vida del Cubo: ${this.cubeLives}`
+    );
     this.cubeLivesText.position.set(
       -this._width / 2 + 200,
       this._height / 2 - 120,
       0
     );
 
-    this.coneLivesText = this.createTextMesh(`Vida del Cono: ${this.coneLives}`);
+    this.coneLivesText = this.createTextMesh(
+      `Vida del Cono: ${this.coneLives}`
+    );
     this.coneLivesText.position.set(
       -this._width / 2 + 200,
       this._height / 2 - 150,
+      0
+    );
+
+    this.cylinderLivesText = this.createTextMesh(
+      `Vida del Cilindro: ${this.cylinderLives}`
+    );
+    this.cylinderLivesText.position.set(
+      -this._width / 2 + 200,
+      this._height / 2 - 180,
       0
     );
 
@@ -141,13 +156,22 @@ class GameScene {
       0
     );
 
+    this.cylinderEnergyBar = this.createEnergyBar();
+    this.cylinderEnergyBar.position.set(
+      -this._width / 2 + 420,
+      this._height / 2 - 130,
+      0
+    );
+
     // Añadir los elementos a la escena del overlay
     this._overlayScene.add(
       this.obstaclesRemainingText,
       this.cubeLivesText,
       this.coneLivesText,
+      this.cylinderLivesText,
       this.cubeEnergyBar,
       this.coneEnergyBar,
+      this.cylinderEnergyBar
     );
   }
 
@@ -348,6 +372,7 @@ class GameScene {
     // Supón que el cubo tiene un tamaño fijo y toma el radio como la mitad de su dimensión
     const cubeRadius = cube.geometry.boundingSphere?.radius || 1; // Radio del cubo
     const coneRadius = cone.geometry.boundingSphere?.radius || 1.5; // Radio de la pirámide
+    const cylinderRadius = cylinder.geometry.boundingSphere?.radius || 1.5; // Radio del cilindro
 
     projectiles.forEach((projectile) => {
       // Supón que el proyectil tiene una geometría esférica
@@ -357,6 +382,7 @@ class GameScene {
       // Suma de los radios de ambos objetos
       const combinedRadiusCube = cubeRadius + projectileRadius;
       const combinedRadiuscone = coneRadius + projectileRadius;
+      const combinedRadiusCylinder = cylinderRadius + projectileRadius;
 
       // Calcula la distancia entre el proyectil y el cubo
       const distanceToCube = this.distanceBetween(
@@ -368,6 +394,12 @@ class GameScene {
       const distanceTocone = this.distanceBetween(
         projectile.mesh.position,
         cone.position
+      );
+
+      // Calcula la distancia entre el proyectil y el cilindro
+      const distanceToCylinder = this.distanceBetween(
+        projectile.mesh.position,
+        cylinder.position
       );
 
       // Verifica si la distancia es menor o igual a la suma de los radios del cubo
@@ -389,9 +421,10 @@ class GameScene {
           }
         }, 200);
 
-        if (this.cubeLives <= 0) {
+        if (this.cubeLives === 0) {
           this._scene.remove(cube);
           this.obstaclesRemaining -= 1;
+          this.updateOverlay(); // Actualizar la interfaz
           console.log("Cube destroyed!");
         }
       } else if (
@@ -412,10 +445,35 @@ class GameScene {
           }
         }, 200);
 
-        if (this.coneLives <= 0) {
+        if (this.coneLives === 0) {
           this._scene.remove(cone);
           this.obstaclesRemaining -= 1;
+          this.updateOverlay(); // Actualizar la interfaz
           console.log("cone destroyed!");
+        }
+      } else if (
+        projectile.active &&
+        distanceToCylinder <= combinedRadiusCylinder &&
+        this.cylinderLives > 0
+      ) {
+        console.log("Hit on the cylinder!");
+        this.cylinderLives -= 1;
+        this.updateOverlay(); // Actualizar la interfaz
+        cylinder.material.color.setHex(0xff0000);
+        this._scene.remove(projectile.mesh);
+        projectile.deactivate();
+
+        setTimeout(() => {
+          if (this.cylinderLives > 0) {
+            cylinder.material.color.setHex(0x00ff00);
+          }
+        }, 200);
+
+        if (this.cylinderLives === 0) {
+          this._scene.remove(cylinder);
+          this.obstaclesRemaining -= 1;
+          this.updateOverlay(); // Actualizar la interfaz
+          console.log("cylinder destroyed!");
         }
       } else if (projectile.active && projectile.mesh.position.y <= 0) {
         console.log("Hit on the ground!");
@@ -425,24 +483,48 @@ class GameScene {
     });
   }
 
+  private updateTextMesh(mesh: Mesh, text: string) {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d")!;
+    context.font = "20px Arial";
+    context.fillStyle = "white";
+    context.fillText(text, 10, 30);
+
+    const texture = new CanvasTexture(canvas);
+    (mesh.material as MeshBasicMaterial).map = texture;
+  }
+
   private updateOverlay() {
     // Actualizar el texto de la vida del cubo
-    this.cubeLivesText = this.createTextMesh(`Vida del Cubo: ${this.cubeLives}`);
-    this._overlayScene.add(this.cubeLivesText);
-  
+    this.updateTextMesh(this.cubeLivesText, `Vida del Cubo: ${this.cubeLives}`);
+
     // Actualizar la barra de energía del cubo
     const cubeEnergyPercentage = this.cubeLives / 3; // 3 es la vida máxima del cubo
     this.cubeEnergyBar.scale.x = cubeEnergyPercentage;
-  
+
     // Actualizar el texto de la vida del cono
-    this.coneLivesText = this.createTextMesh(`Vida del Cono: ${this.coneLives}`);
-    this._overlayScene.add(this.coneLivesText);
-  
+    this.updateTextMesh(this.coneLivesText, `Vida del Cono: ${this.coneLives}`);
+
     // Actualizar la barra de energía del cono
     const coneEnergyPercentage = this.coneLives / 3; // 3 es la vida máxima del cono
     this.coneEnergyBar.scale.x = coneEnergyPercentage;
+
+    // Actualizar el texto de la vida del cilindro
+    this.updateTextMesh(
+      this.cylinderLivesText,
+      `Vida del Cilindro: ${this.cylinderLives}`
+    );
+
+    // Actualizar la barra de energía del cilindro
+    const cylinderEnergyPercentage = this.cylinderLives / 3; // 3 es la vida máxima del cilindro
+    this.cylinderEnergyBar.scale.x = cylinderEnergyPercentage;
+
+    // Actualizar el texto de los obstáculos restantes
+    this.updateTextMesh(
+      this.obstaclesRemainingText,
+      `Obstáculos Restantes: ${this.obstaclesRemaining}`
+    );
   }
-  
 }
 
 export default GameScene;
