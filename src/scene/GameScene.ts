@@ -179,7 +179,7 @@ class GameScene {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d")!;
     context.font = "20px Arial";
-    context.fillStyle = "white";
+    context.fillStyle = "black";
     context.fillText(text, 10, 30);
 
     const texture = new CanvasTexture(canvas);
@@ -487,7 +487,7 @@ class GameScene {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d")!;
     context.font = "20px Arial";
-    context.fillStyle = "white";
+    context.fillStyle = "black";
     context.fillText(text, 10, 30);
 
     const texture = new CanvasTexture(canvas);
