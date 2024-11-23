@@ -11,16 +11,18 @@ import {
   CanvasTexture,
   MeshBasicMaterial,
   PlaneGeometry,
+  TextureLoader,
+  SpriteMaterial,
+  Sprite,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Vehicle from "../entyties/Vehicle";
 import cube from "../shapes/Cube";
 import skybox from "../shapes/Skybox";
 import plane from "../shapes/plane";
-// import cylinder from "../shapes/cone";
 import cone from "../shapes/Cone";
-// import sphere from "../shapes/Esphere";
 import cylinder from "../shapes/Cylinder";
+import Numeros from "../../public/Numeros.json";
 
 class GameScene {
   private static _instance = new GameScene();
@@ -57,6 +59,13 @@ class GameScene {
   private cubeEnergyBar!: Mesh;
   private coneEnergyBar!: Mesh;
   private cylinderEnergyBar!: Mesh;
+  private map = new TextureLoader().load("../../public/Numeros.png");
+  private material = new SpriteMaterial({ map: this.map });
+  private sprite = new Sprite(this.material);
+  private currentNumber: number = 0;
+
+  private timeSinceLastChange: number = 0; // Variable para contar el tiempo transcurrido
+  private changeInterval: number = 500; // Intervalo de cambio en milisegundos (puedes ajustarlo a la velocidad que desees)
 
   // Estado para el modo de disparo
   private shootMode: "rectilinear" | "parabolic" = "rectilinear";
@@ -163,6 +172,52 @@ class GameScene {
       0
     );
 
+    this.map.repeat.set(1 / 4, 1 / 3);
+
+    //Este es la posicion del 0
+    // this.map.offset.x = 1 / 25;
+    // this.map.offset.y = 1 - 1 / 3;
+
+    //Este es la posicion del 1
+    // this.map.offset.x = 1 / 1.3;
+    // this.map.offset.y = 1 - 1 / 3;
+
+    //Este es la posicion del 2
+    // this.map.offset.x = 1 / 4;
+    // this.map.offset.y = 1 - 1 / 3;
+
+    //Este es la posicion del 3
+    // this.map.offset.x = 1 / 2;
+    // this.map.offset.y = 1 - 1 / 3;
+
+    //Este es la posicion del 4
+    // this.map.offset.x = 1 / 25;
+    // this.map.offset.y = 1 - 1 / 1.5;
+
+    //Este es la posicion del 5
+    // this.map.offset.x = 1 / 4;
+    // this.map.offset.y = 1 - 1 / 1.5;
+
+    //Este es la posicion del 6
+    // this.map.offset.x = 1 / 2;
+    // this.map.offset.y = 1 - 1 / 1.5;
+
+    //Este es la posicion del 7
+    // this.map.offset.x = 1 / 25;
+    // this.map.offset.y = 1 - 1 / 1.01;
+
+    //Este es la posicion del 8
+    // this.map.offset.x = 1 / 4;
+    // this.map.offset.y = 1 - 1 / 1.01;
+
+    //Este es la posicion del 9
+    // this.map.offset.x = 1 / 2;
+    // this.map.offset.y = 1 - 1 / 1.01;
+
+    this.sprite.position.y = this._height / 2 - 100;
+    this.sprite.position.x = this._width / 2 - 100;
+    this.sprite.scale.set(100, 100, 100);
+
     // Añadir los elementos a la escena del overlay
     this._overlayScene.add(
       this.obstaclesRemainingText,
@@ -171,8 +226,32 @@ class GameScene {
       this.cylinderLivesText,
       this.cubeEnergyBar,
       this.coneEnergyBar,
-      this.cylinderEnergyBar
+      this.cylinderEnergyBar,
+      this.sprite
     );
+  }
+
+  private updateNumber() {
+    // Establecer la posición de la textura en función del número actual
+    const numberPositions = [
+      { x: 1 / 25, y: 1 - 1 / 3 }, // 0
+      { x: 1 / 1.3, y: 1 - 1 / 3 }, // 1
+      { x: 1 / 4, y: 1 - 1 / 3 }, // 2
+      { x: 1 / 2, y: 1 - 1 / 3 }, // 3
+      { x: 1 / 25, y: 1 - 1 / 1.5 }, // 4
+      { x: 1 / 4, y: 1 - 1 / 1.5 }, // 5
+      { x: 1 / 2, y: 1 - 1 / 1.5 }, // 6
+      { x: 1 / 25, y: 1 - 1 / 1.01 }, // 7
+      { x: 1 / 4, y: 1 - 1 / 1.01 }, // 8
+      { x: 1 / 2, y: 1 - 1 / 1.01 }, // 9
+    ];
+
+    // Actualizar la posición de la textura en el atlas según el número actual
+    this.map.offset.x = numberPositions[this.currentNumber].x;
+    this.map.offset.y = numberPositions[this.currentNumber].y;
+
+    // Incrementar el contador, reiniciar al llegar a 9
+    this.currentNumber = (this.currentNumber + 1) % 10; // Reinicia cuando llega a 10
   }
 
   private createTextMesh(text: string): Mesh {
@@ -332,6 +411,16 @@ class GameScene {
         this.updateCameraPosition(); // Actualizar posición de la cámara en tercera persona
       } else {
         this._controls.update(); // Actualiza los controles si está en primera persona
+      }
+
+      // Calcular el tiempo transcurrido desde el último cambio
+      this.timeSinceLastChange += delta;
+
+      // Cambiar el sprite solo después de que haya pasado el intervalo de tiempo
+      if (this.timeSinceLastChange >= this.changeInterval) {
+        this.timeSinceLastChange = 0; // Resetear el contador de tiempo
+        // Actualizar el número (contador)
+        this.updateNumber();
       }
 
       this._vehicle.update(delta / 1000); // Pasar delta en segundos
