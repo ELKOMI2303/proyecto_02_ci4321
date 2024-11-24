@@ -22,7 +22,6 @@ import skybox from "../shapes/Skybox";
 import plane from "../shapes/plane";
 import cone from "../shapes/Cone";
 import cylinder from "../shapes/Cylinder";
-import Numeros from "../../public/Numeros.json";
 
 class GameScene {
   private static _instance = new GameScene();
