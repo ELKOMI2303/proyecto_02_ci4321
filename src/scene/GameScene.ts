@@ -65,7 +65,7 @@ class GameScene {
   private currentNumber: number = 0;
 
   private timeSinceLastChange: number = 0; // Variable para contar el tiempo transcurrido
-  private changeInterval: number = 500; // Intervalo de cambio en milisegundos (puedes ajustarlo a la velocidad que desees)
+  private changeInterval: number = 1000; // Intervalo de cambio en milisegundos (puedes ajustarlo a la velocidad que desees)
 
   // Estado para el modo de disparo
   private shootMode: "rectilinear" | "parabolic" = "rectilinear";
@@ -174,46 +174,6 @@ class GameScene {
 
     this.map.repeat.set(1 / 4, 1 / 3);
 
-    //Este es la posicion del 0
-    // this.map.offset.x = 1 / 25;
-    // this.map.offset.y = 1 - 1 / 3;
-
-    //Este es la posicion del 1
-    // this.map.offset.x = 1 / 1.3;
-    // this.map.offset.y = 1 - 1 / 3;
-
-    //Este es la posicion del 2
-    // this.map.offset.x = 1 / 4;
-    // this.map.offset.y = 1 - 1 / 3;
-
-    //Este es la posicion del 3
-    // this.map.offset.x = 1 / 2;
-    // this.map.offset.y = 1 - 1 / 3;
-
-    //Este es la posicion del 4
-    // this.map.offset.x = 1 / 25;
-    // this.map.offset.y = 1 - 1 / 1.5;
-
-    //Este es la posicion del 5
-    // this.map.offset.x = 1 / 4;
-    // this.map.offset.y = 1 - 1 / 1.5;
-
-    //Este es la posicion del 6
-    // this.map.offset.x = 1 / 2;
-    // this.map.offset.y = 1 - 1 / 1.5;
-
-    //Este es la posicion del 7
-    // this.map.offset.x = 1 / 25;
-    // this.map.offset.y = 1 - 1 / 1.01;
-
-    //Este es la posicion del 8
-    // this.map.offset.x = 1 / 4;
-    // this.map.offset.y = 1 - 1 / 1.01;
-
-    //Este es la posicion del 9
-    // this.map.offset.x = 1 / 2;
-    // this.map.offset.y = 1 - 1 / 1.01;
-
     this.sprite.position.y = this._height / 2 - 100;
     this.sprite.position.x = this._width / 2 - 100;
     this.sprite.scale.set(100, 100, 100);
@@ -231,27 +191,35 @@ class GameScene {
     );
   }
 
-  private updateNumber() {
-    // Establecer la posición de la textura en función del número actual
+  private updateNumber(newNumber: number) {
+    // Validar que el número está en el rango permitido (0-9)
+    if (newNumber < 0 || newNumber > 9) {
+      console.warn("Número fuera de rango: ", newNumber);
+      return;
+    }
+
+    // Establecer la posición de la textura en función del número proporcionado
     const numberPositions = [
-      { x: 1 / 25, y: 1 - 1 / 3 }, // 0
-      { x: 1 / 1.3, y: 1 - 1 / 3 }, // 1
-      { x: 1 / 4, y: 1 - 1 / 3 }, // 2
-      { x: 1 / 2, y: 1 - 1 / 3 }, // 3
-      { x: 1 / 25, y: 1 - 1 / 1.5 }, // 4
-      { x: 1 / 4, y: 1 - 1 / 1.5 }, // 5
-      { x: 1 / 2, y: 1 - 1 / 1.5 }, // 6
-      { x: 1 / 25, y: 1 - 1 / 1.01 }, // 7
-      { x: 1 / 4, y: 1 - 1 / 1.01 }, // 8
-      { x: 1 / 2, y: 1 - 1 / 1.01 }, // 9
+      { x: 1 / 31, y: 1 - 1 / 3 }, // 0
+      { x: 1 / 1.28, y: 1 - 1 / 3 }, // 1
+      { x: 1 / 3.55, y: 1 - 1 / 3 }, // 2
+      { x: 1 / 1.88, y: 1 - 1 / 3 }, // 3
+      { x: 1 / 31, y: 1 - 1 / 1.5 }, // 4
+      { x: 1 / 3.55, y: 1 - 1 / 1.5 }, // 5
+      { x: 1 / 1.88, y: 1 - 1 / 1.5 }, // 6
+      { x: 1 / 31, y: 1 - 1 / 1.001 }, // 7
+      { x: 1 / 3.55, y: 1 - 1 / 1.001 }, // 8
+      { x: 1 / 1.88, y: 1 - 1 / 1.001 }, // 9
     ];
 
-    // Actualizar la posición de la textura en el atlas según el número actual
-    this.map.offset.x = numberPositions[this.currentNumber].x;
-    this.map.offset.y = numberPositions[this.currentNumber].y;
+    // Actualizar la posición de la textura en el atlas según el número proporcionado
+    this.map.offset.x = numberPositions[newNumber].x;
+    this.map.offset.y = numberPositions[newNumber].y;
+  }
 
-    // Incrementar el contador, reiniciar al llegar a 9
-    this.currentNumber = (this.currentNumber + 1) % 10; // Reinicia cuando llega a 10
+  private incrementNumber() {
+    this.currentNumber = (this.currentNumber + 1) % 10; // Incrementar y reiniciar al llegar a 10
+    this.updateNumber(this.currentNumber); // Llamar a la función con el número actual
   }
 
   private createTextMesh(text: string): Mesh {
@@ -420,7 +388,7 @@ class GameScene {
       if (this.timeSinceLastChange >= this.changeInterval) {
         this.timeSinceLastChange = 0; // Resetear el contador de tiempo
         // Actualizar el número (contador)
-        this.updateNumber();
+        this.incrementNumber();
       }
 
       this._vehicle.update(delta / 1000); // Pasar delta en segundos
