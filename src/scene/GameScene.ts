@@ -349,14 +349,14 @@ class GameScene {
 
     this._scene.add(cylinder);
 
-    cone.position.set(30, 1.5, 10);
+    cone.position.set(30, 2.8, 10);
 
-    cylinder.position.set(15, 3, 10);
+    cylinder.position.set(15, 2.8, 10);
 
     //sphere.position.set(15, 3, 10);
 
     // Opcional: Ajustar la posición del cubo si es necesario
-    cube.position.set(0, 1.5, 10); // Mueve el cubo en la escena según lo necesites
+    cube.position.set(0,2.8, 10); // Mueve el cubo en la escena según lo necesites
   };
 
   private distanceBetween = (v1: Vector3, v2: Vector3): number => {
