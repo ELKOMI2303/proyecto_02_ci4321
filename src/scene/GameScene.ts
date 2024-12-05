@@ -6,10 +6,14 @@ import {
   DirectionalLight,
   Vector3,
   PointLight,
+  SphereGeometry,
+  SpotLight,
+  HemisphereLight,
   Mesh,
   OrthographicCamera,
   CanvasTexture,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   PlaneGeometry,
   TextureLoader,
   SpriteMaterial,
@@ -50,6 +54,8 @@ class GameScene {
   private _overlayCamera: OrthographicCamera;
   private _overlayScene: Scene;
 
+  private _lights: Record<string, any> = {};
+
   // Elementos de la interfaz
   private cubeLivesText!: Mesh;
   private coneLivesText!: Mesh;
@@ -62,6 +68,8 @@ class GameScene {
   private material = new SpriteMaterial({ map: this.map });
   private sprite = new Sprite(this.material);
   private currentNumber: number = 0;
+ 
+
 
   private timeSinceLastChange: number = 0; // Variable para contar el tiempo transcurrido
   private changeInterval: number = 1000; // Intervalo de cambio en milisegundos (puedes ajustarlo a la velocidad que desees)
@@ -241,23 +249,168 @@ class GameScene {
   }
 
   private addLights() {
+    // Luz ambiental
     const ambientLight = new AmbientLight(0x808080); // Luz ambiental más intensa
     this._scene.add(ambientLight);
 
-    const directionalLight = new DirectionalLight(0xffffff, 1.5); // Ajustar la intensidad
-    directionalLight.position.set(15, 100, -100); // Ajustar la posición para iluminar desde arriba
-    directionalLight.target.position.set(0, 0, 0); // Apuntar al centro de las figuras
+    // Luz emisférica (siempre visible)
+    const hemisphereLight = new HemisphereLight(0x87ceeb, 0x4a2c2c, 0.8); // Cielo azul claro, suelo marrón rojizo, intensidad 0.8
+    hemisphereLight.position.set(0, 50, 0);
+    hemisphereLight.visible = false;
+    this._scene.add(hemisphereLight);
+
+    // Luz direccional (prendida por defecto)
+    const directionalLight = new DirectionalLight(0xffffff, 1.5);
+    directionalLight.position.set(15, 100, -100);
+    directionalLight.target.position.set(0, 0, 0);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.set(2048, 2048);
     directionalLight.shadow.camera.near = 0.5;
     directionalLight.shadow.camera.far = 500;
+    directionalLight.visible = true; // Prendida por defecto
     this._scene.add(directionalLight);
     this._scene.add(directionalLight.target);
 
-    const pointLight = new PointLight(0xffffff, 1); // Luz puntual adicional cerca de la esfera
-    pointLight.position.set(15, 5, 10);
+    // Luz puntual (simulando fogata)
+    const pointLight = new PointLight(0xff4500, 4, 100); // Mayor intensidad y alcance
+    pointLight.position.set(15, 1, 15);
+    pointLight.visible = false; // Apagada por defecto
     this._scene.add(pointLight);
+
+    // Material para la punta de la antorcha (esfera)
+    const torchTipMaterial = new MeshStandardMaterial({
+        color: 0xffa500, // Color inicial anaranjado tenue
+        emissive: 0x000000, // Sin emisión inicial
+        emissiveIntensity: 0,
+        roughness: 0.4,
+        metalness: 0.1,
+    });
+
+    // Geometría de la esfera
+    const torchTipGeometry = new SphereGeometry(0.4, 16, 16);
+    const torchTip = new Mesh(torchTipGeometry, torchTipMaterial);
+    torchTip.position.set(15, 1, 15);
+    torchTip.visible = true; // Siempre visible
+    this._scene.add(torchTip);
+
+    // Guardar referencias para controlarlas dinámicamente
+    this._lights = { directionalLight, pointLight, hemisphereLight, torchTip };
+
+    // Simulación de parpadeo para la luz puntual
+    setInterval(() => {
+        if (pointLight.visible) {
+            pointLight.intensity = 3 + Math.random() * 2; // Intensidad entre 3 y 5
+        }
+    }, 200); // Parpadeo cada 200ms
+}
+
+private onKeyDown = (event: KeyboardEvent) => {
+  const delta = 0.016;
+
+  switch (event.key.toLowerCase()) {
+      case "arrowup":
+          this._vehicle.rotateCannonPitch(-0.1);
+          break;
+      case "arrowdown":
+          this._vehicle.rotateCannonPitch(0.1);
+          break;
+      case "arrowleft":
+          this._vehicle.rotateCannonYaw(0.1);
+          break;
+      case "arrowright":
+          this._vehicle.rotateCannonYaw(-0.1);
+          break;
+      case "w":
+          this._vehicle.moveForward(delta);
+          break;
+      case "s":
+          this._vehicle.moveBackward(delta);
+          break;
+      case "a":
+          this._vehicle.rotateLeft(delta);
+          break;
+      case "d":
+          this._vehicle.rotateRight(delta);
+          break;
+      case " ":
+          this._vehicle.shoot(this.shootMode);
+          break;
+      case "1":
+          this.shootMode = "rectilinear";
+          console.log("Shoot Mode: Rectilinear");
+          break;
+      case "2":
+          this.shootMode = "parabolic";
+          console.log("Shoot Mode: Parabolic");
+          break;
+      case "3": // Cambiar entre cámaras
+          this.isThirdPerson = !this.isThirdPerson;
+          console.log(
+              `Camera Mode: ${this.isThirdPerson ? "Third Person" : "First Person"}`
+          );
+          break;
+      case "l": // Alternar luces entre direccional y fogata
+          this.toggleDirectionalAndPointLight();
+          break;
+      case "k": // Alternar luces entre direccional y emisférica
+          this.toggleDirectionalAndHemisphereLight();
+          break;
   }
+};
+
+private toggleDirectionalAndPointLight() {
+  const { directionalLight, pointLight, torchTip } = this._lights;
+
+  if (directionalLight.visible) {
+      // Apagar la luz direccional y encender la fogata
+      directionalLight.visible = false;
+      pointLight.visible = true;
+
+      // Cambiar la apariencia de la esfera para simular una fogata activa
+      torchTip.material.color.set(0xffa500); // Naranja brillante
+      torchTip.material.emissive.set(0xffffff); // Emisión blanca cálida
+      torchTip.material.emissiveIntensity = 1.5; // Más brillo
+  } else {
+      // Encender la luz direccional y apagar la fogata
+      directionalLight.visible = true;
+      pointLight.visible = false;
+
+      // Cambiar la apariencia de la esfera para simular inactividad
+      torchTip.material.color.set(0xff4500); // Naranja apagado
+      torchTip.material.emissive.set(0x000000); // Sin emisión
+      torchTip.material.emissiveIntensity = 0; // Sin brillo
+  }
+
+  console.log(
+      `Directional Light: ${directionalLight.visible}, Point Light: ${pointLight.visible ? "On" : "Off"}`
+  );
+}
+
+private toggleDirectionalAndHemisphereLight() {
+  const { directionalLight, hemisphereLight, torchTip } = this._lights;
+
+  if (directionalLight.visible) {
+      // Apagar la luz direccional y encender la emisférica
+      directionalLight.visible = false;
+      hemisphereLight.visible = true;
+
+      // Cambiar la apariencia de la esfera para simular luz emisférica
+      torchTip.material.color.set(0xff4500); // Naranja apagado
+      torchTip.material.emissive.set(0x000000); // Sin emisión
+      torchTip.material.emissiveIntensity = 0; // Sin brillo
+  } else {
+      // Encender la luz direccional y apagar la emisférica
+      directionalLight.visible = true;
+      hemisphereLight.visible = false;
+
+      // No cambiar la apariencia de la esfera, ya que es decorativa
+  }
+
+  console.log(
+      `Directional Light: ${directionalLight.visible}, Hemisphere Light: ${hemisphereLight.visible ? "On" : "Off"}`
+  );
+}
+
 
   private setupControls() {
     this._controls = new OrbitControls(this._camera, this._renderer.domElement);
@@ -289,53 +442,8 @@ class GameScene {
     this._overlayCamera.updateProjectionMatrix();
   };
 
-  private onKeyDown = (event: KeyboardEvent) => {
-    const delta = 0.016;
+  
 
-    switch (event.key.toLowerCase()) {
-      case "arrowup":
-        this._vehicle.rotateCannonPitch(-0.1);
-        break;
-      case "arrowdown":
-        this._vehicle.rotateCannonPitch(0.1);
-        break;
-      case "arrowleft":
-        this._vehicle.rotateCannonYaw(0.1);
-        break;
-      case "arrowright":
-        this._vehicle.rotateCannonYaw(-0.1);
-        break;
-      case "w":
-        this._vehicle.moveForward(delta);
-        break;
-      case "s":
-        this._vehicle.moveBackward(delta);
-        break;
-      case "a":
-        this._vehicle.rotateLeft(delta);
-        break;
-      case "d":
-        this._vehicle.rotateRight(delta);
-        break;
-      case " ":
-        this._vehicle.shoot(this.shootMode);
-        break;
-      case "1":
-        this.shootMode = "rectilinear";
-        console.log("Shoot Mode: Rectilinear");
-        break;
-      case "2":
-        this.shootMode = "parabolic";
-        console.log("Shoot Mode: Parabolic");
-        break;
-      case "3": // Cambiar entre cámaras
-        this.isThirdPerson = !this.isThirdPerson;
-        console.log(
-          `Camera Mode: ${this.isThirdPerson ? "Third Person" : "First Person"}`
-        );
-        break;
-    }
-  };
 
   public load = () => {
     this._scene.add(skybox);
@@ -353,7 +461,6 @@ class GameScene {
 
     cylinder.position.set(15, 2.8, 10);
 
-    //sphere.position.set(15, 3, 10);
 
     // Opcional: Ajustar la posición del cubo si es necesario
     cube.position.set(0,2.8, 10); // Mueve el cubo en la escena según lo necesites
