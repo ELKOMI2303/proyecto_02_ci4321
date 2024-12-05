@@ -1,9 +1,9 @@
-**Proyecto 02**  
+**Proyecto 03**  
 **Curso:** CI4321 (2024)  
 **Puntuación Total:** 10 puntos  
 **Alumnos:** Felix Arnos y Jonathan Bautista  
 **Carnets:** 15-10088 y 16-10109  
-**Fecha:** 2024-11-25
+**Fecha:** 2024-12-11
 
 ## Sistema Operativo
 
