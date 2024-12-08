@@ -18,6 +18,11 @@ import {
   TextureLoader,
   SpriteMaterial,
   Sprite,
+  BufferGeometry,
+  BufferAttribute,
+  PointsMaterial,
+  Points,
+  ShaderMaterial,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Vehicle from "../entyties/Vehicle";
@@ -68,8 +73,6 @@ class GameScene {
   private material = new SpriteMaterial({ map: this.map });
   private sprite = new Sprite(this.material);
   private currentNumber: number = 0;
- 
-
 
   private timeSinceLastChange: number = 0; // Variable para contar el tiempo transcurrido
   private changeInterval: number = 1000; // Intervalo de cambio en milisegundos (puedes ajustarlo a la velocidad que desees)
@@ -279,11 +282,11 @@ class GameScene {
 
     // Material para la punta de la antorcha (esfera)
     const torchTipMaterial = new MeshStandardMaterial({
-        color: 0xffa500, // Color inicial anaranjado tenue
-        emissive: 0x000000, // Sin emisión inicial
-        emissiveIntensity: 0,
-        roughness: 0.4,
-        metalness: 0.1,
+      color: 0xffa500, // Color inicial anaranjado tenue
+      emissive: 0x000000, // Sin emisión inicial
+      emissiveIntensity: 0,
+      roughness: 0.4,
+      metalness: 0.1,
     });
 
     // Geometría de la esfera
@@ -298,70 +301,70 @@ class GameScene {
 
     // Simulación de parpadeo para la luz puntual
     setInterval(() => {
-        if (pointLight.visible) {
-            pointLight.intensity = 3 + Math.random() * 2; // Intensidad entre 3 y 5
-        }
+      if (pointLight.visible) {
+        pointLight.intensity = 3 + Math.random() * 2; // Intensidad entre 3 y 5
+      }
     }, 200); // Parpadeo cada 200ms
-}
-
-private onKeyDown = (event: KeyboardEvent) => {
-  const delta = 0.016;
-
-  switch (event.key.toLowerCase()) {
-      case "arrowup":
-          this._vehicle.rotateCannonPitch(-0.1);
-          break;
-      case "arrowdown":
-          this._vehicle.rotateCannonPitch(0.1);
-          break;
-      case "arrowleft":
-          this._vehicle.rotateCannonYaw(0.1);
-          break;
-      case "arrowright":
-          this._vehicle.rotateCannonYaw(-0.1);
-          break;
-      case "w":
-          this._vehicle.moveForward(delta);
-          break;
-      case "s":
-          this._vehicle.moveBackward(delta);
-          break;
-      case "a":
-          this._vehicle.rotateLeft(delta);
-          break;
-      case "d":
-          this._vehicle.rotateRight(delta);
-          break;
-      case " ":
-          this._vehicle.shoot(this.shootMode);
-          break;
-      case "1":
-          this.shootMode = "rectilinear";
-          console.log("Shoot Mode: Rectilinear");
-          break;
-      case "2":
-          this.shootMode = "parabolic";
-          console.log("Shoot Mode: Parabolic");
-          break;
-      case "3": // Cambiar entre cámaras
-          this.isThirdPerson = !this.isThirdPerson;
-          console.log(
-              `Camera Mode: ${this.isThirdPerson ? "Third Person" : "First Person"}`
-          );
-          break;
-      case "l": // Alternar luces entre direccional y fogata
-          this.toggleDirectionalAndPointLight();
-          break;
-      case "k": // Alternar luces entre direccional y emisférica
-          this.toggleDirectionalAndHemisphereLight();
-          break;
   }
-};
 
-private toggleDirectionalAndPointLight() {
-  const { directionalLight, pointLight, torchTip } = this._lights;
+  private onKeyDown = (event: KeyboardEvent) => {
+    const delta = 0.016;
 
-  if (directionalLight.visible) {
+    switch (event.key.toLowerCase()) {
+      case "arrowup":
+        this._vehicle.rotateCannonPitch(-0.1);
+        break;
+      case "arrowdown":
+        this._vehicle.rotateCannonPitch(0.1);
+        break;
+      case "arrowleft":
+        this._vehicle.rotateCannonYaw(0.1);
+        break;
+      case "arrowright":
+        this._vehicle.rotateCannonYaw(-0.1);
+        break;
+      case "w":
+        this._vehicle.moveForward(delta);
+        break;
+      case "s":
+        this._vehicle.moveBackward(delta);
+        break;
+      case "a":
+        this._vehicle.rotateLeft(delta);
+        break;
+      case "d":
+        this._vehicle.rotateRight(delta);
+        break;
+      case " ":
+        this._vehicle.shoot(this.shootMode);
+        break;
+      case "1":
+        this.shootMode = "rectilinear";
+        console.log("Shoot Mode: Rectilinear");
+        break;
+      case "2":
+        this.shootMode = "parabolic";
+        console.log("Shoot Mode: Parabolic");
+        break;
+      case "3": // Cambiar entre cámaras
+        this.isThirdPerson = !this.isThirdPerson;
+        console.log(
+          `Camera Mode: ${this.isThirdPerson ? "Third Person" : "First Person"}`
+        );
+        break;
+      case "l": // Alternar luces entre direccional y fogata
+        this.toggleDirectionalAndPointLight();
+        break;
+      case "k": // Alternar luces entre direccional y emisférica
+        this.toggleDirectionalAndHemisphereLight();
+        break;
+    }
+  };
+
+  private toggleDirectionalAndPointLight() {
+    const { directionalLight, pointLight, torchTip } = this._lights;
+
+    if (directionalLight.visible) {
       // Apagar la luz direccional y encender la fogata
       directionalLight.visible = false;
       pointLight.visible = true;
@@ -370,7 +373,7 @@ private toggleDirectionalAndPointLight() {
       torchTip.material.color.set(0xffa500); // Naranja brillante
       torchTip.material.emissive.set(0xffffff); // Emisión blanca cálida
       torchTip.material.emissiveIntensity = 1.5; // Más brillo
-  } else {
+    } else {
       // Encender la luz direccional y apagar la fogata
       directionalLight.visible = true;
       pointLight.visible = false;
@@ -379,17 +382,19 @@ private toggleDirectionalAndPointLight() {
       torchTip.material.color.set(0xff4500); // Naranja apagado
       torchTip.material.emissive.set(0x000000); // Sin emisión
       torchTip.material.emissiveIntensity = 0; // Sin brillo
+    }
+
+    console.log(
+      `Directional Light: ${directionalLight.visible}, Point Light: ${
+        pointLight.visible ? "On" : "Off"
+      }`
+    );
   }
 
-  console.log(
-      `Directional Light: ${directionalLight.visible}, Point Light: ${pointLight.visible ? "On" : "Off"}`
-  );
-}
+  private toggleDirectionalAndHemisphereLight() {
+    const { directionalLight, hemisphereLight, torchTip } = this._lights;
 
-private toggleDirectionalAndHemisphereLight() {
-  const { directionalLight, hemisphereLight, torchTip } = this._lights;
-
-  if (directionalLight.visible) {
+    if (directionalLight.visible) {
       // Apagar la luz direccional y encender la emisférica
       directionalLight.visible = false;
       hemisphereLight.visible = true;
@@ -398,19 +403,20 @@ private toggleDirectionalAndHemisphereLight() {
       torchTip.material.color.set(0xff4500); // Naranja apagado
       torchTip.material.emissive.set(0x000000); // Sin emisión
       torchTip.material.emissiveIntensity = 0; // Sin brillo
-  } else {
+    } else {
       // Encender la luz direccional y apagar la emisférica
       directionalLight.visible = true;
       hemisphereLight.visible = false;
 
       // No cambiar la apariencia de la esfera, ya que es decorativa
+    }
+
+    console.log(
+      `Directional Light: ${directionalLight.visible}, Hemisphere Light: ${
+        hemisphereLight.visible ? "On" : "Off"
+      }`
+    );
   }
-
-  console.log(
-      `Directional Light: ${directionalLight.visible}, Hemisphere Light: ${hemisphereLight.visible ? "On" : "Off"}`
-  );
-}
-
 
   private setupControls() {
     this._controls = new OrbitControls(this._camera, this._renderer.domElement);
@@ -442,9 +448,6 @@ private toggleDirectionalAndHemisphereLight() {
     this._overlayCamera.updateProjectionMatrix();
   };
 
-  
-
-
   public load = () => {
     this._scene.add(skybox);
     skybox.position.set(0, 0, 0);
@@ -461,9 +464,8 @@ private toggleDirectionalAndHemisphereLight() {
 
     cylinder.position.set(15, 2.8, 10);
 
-
     // Opcional: Ajustar la posición del cubo si es necesario
-    cube.position.set(0,2.8, 10); // Mueve el cubo en la escena según lo necesites
+    cube.position.set(0, 2.8, 10); // Mueve el cubo en la escena según lo necesites
   };
 
   private distanceBetween = (v1: Vector3, v2: Vector3): number => {
@@ -529,6 +531,232 @@ private toggleDirectionalAndHemisphereLight() {
     this._camera.lookAt(vehiclePosition); // Asegúrate de que la cámara esté mirando al vehículo
   }
 
+  // private createExplosion(position: Vector3) {
+  //   const particleCount = 50;
+  //   const particlesGeometry = new BufferGeometry();
+  //   const positions = new Float32Array(particleCount * 3);
+  //   const velocities = new Float32Array(particleCount * 3);
+  //   const colors = new Float32Array(particleCount * 3);
+  //   const sizes = new Float32Array(particleCount);
+
+  //   const speedFactor = 0.3; // Controla la velocidad de las partículas
+
+  //   for (let i = 0; i < particleCount; i++) {
+  //     // Posiciones iniciales (centro de la explosión)
+  //     positions[i * 3 + 0] = position.x;
+  //     positions[i * 3 + 1] = position.y;
+  //     positions[i * 3 + 2] = position.z;
+
+  //     // Generar dirección aleatoria en una esfera
+  //     const theta = Math.random() * 2 * Math.PI; // Ángulo en el plano XZ
+  //     const phi = Math.acos(2 * Math.random() - 1); // Ángulo en el eje Y
+  //     const x = Math.sin(phi) * Math.cos(theta);
+  //     const y = Math.sin(phi) * Math.sin(theta);
+  //     const z = Math.cos(phi);
+
+  //     // Asignar velocidades escaladas
+  //     velocities[i * 3 + 0] -= x * speedFactor;
+  //     velocities[i * 3 + 1] -= y * speedFactor;
+  //     velocities[i * 3 + 2] -= z * speedFactor;
+
+  //     // Colores iniciales
+  //     colors[i * 3 + 0] = 1.0; // Rojo
+  //     colors[i * 3 + 1] = 0.6; // Verde
+  //     colors[i * 3 + 2] = 0.0; // Azul
+
+  //     // Tamaño aleatorio
+  //     sizes[i] = Math.random() * 0.3 + 0.1;
+  //   }
+
+  //   particlesGeometry.setAttribute(
+  //     "position",
+  //     new BufferAttribute(positions, 3)
+  //   );
+  //   particlesGeometry.setAttribute(
+  //     "velocity",
+  //     new BufferAttribute(velocities, 3)
+  //   );
+  //   particlesGeometry.setAttribute("color", new BufferAttribute(colors, 3));
+  //   particlesGeometry.setAttribute("size", new BufferAttribute(sizes, 3));
+
+  //   const particlesMaterial = new PointsMaterial({
+  //     vertexColors: true,
+  //     size: 0.2,
+  //     transparent: true,
+  //     opacity: 1.0,
+  //   });
+
+  //   const particles = new Points(particlesGeometry, particlesMaterial);
+  //   this._scene.add(particles);
+
+  //   // Luz puntual en la explosión
+  //   const light = new PointLight(0xffaa00, 1, 20);
+  //   light.position.copy(position);
+  //   this._scene.add(light);
+
+  //   // Sonido de explosión
+  //   const explosionSound = new Audio("/explosion.mp3");
+  //   explosionSound.play();
+
+  //   const lifetime = 2; // Segundos
+  //   let elapsedTime = 0;
+
+  //   const animateParticles = () => {
+  //     elapsedTime += 0.016;
+
+  //     const positions = particlesGeometry.attributes.position
+  //       .array as Float32Array;
+  //     const velocities = particlesGeometry.attributes.velocity
+  //       .array as Float32Array;
+  //     const colors = particlesGeometry.attributes.color.array as Float32Array;
+
+  //     // Actualiza posiciones con velocidad y gravedad
+  //     for (let i = 0; i < particleCount; i++) {
+  //       positions[i * 3 + 0] += velocities[i * 3 + 0] * 0.1; // x
+  //       positions[i * 3 + 1] += velocities[i * 3 + 1] * 0.1; // y
+  //       positions[i * 3 + 1] -= 0.01; // Gravedad
+  //       positions[i * 3 + 2] += velocities[i * 3 + 2] * 0.1; // z
+  //     }
+
+  //     // Cambiar colores a lo largo del tiempo
+  //     for (let i = 0; i < particleCount; i++) {
+  //       colors[i * 3 + 1] = Math.max(0, 1 - elapsedTime / lifetime); // Verde decrece
+  //       colors[i * 3 + 2] = elapsedTime / lifetime; // Azul aumenta
+  //     }
+
+  //     particlesMaterial.opacity = Math.max(0, 1 - elapsedTime / lifetime);
+
+  //     particlesGeometry.attributes.position.needsUpdate = true;
+  //     particlesGeometry.attributes.color.needsUpdate = true;
+
+  //     if (elapsedTime < lifetime) {
+  //       requestAnimationFrame(animateParticles);
+  //     } else {
+  //       this._scene.remove(particles);
+  //       this._scene.remove(light);
+  //       particlesGeometry.dispose();
+  //       particlesMaterial.dispose();
+  //     }
+  //   };
+
+  //   animateParticles();
+  // }
+
+  private createExplosion(position: Vector3) {
+    const particleCount = 50;
+    const particlesGeometry = new BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+
+    const speedFactor = 2;
+
+    for (let i = 0; i < particleCount; i++) {
+      // Posiciones iniciales (centro de la explosión)
+      positions[i * 3 + 0] = position.x;
+      positions[i * 3 + 1] = position.y;
+      positions[i * 3 + 2] = position.z;
+
+      // Generar dirección aleatoria
+      const theta = Math.random() * 2 * Math.PI;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const x = Math.sin(phi) * Math.cos(theta);
+      const y = Math.sin(phi) * Math.sin(theta);
+      const z = Math.cos(phi);
+
+      // Asignar velocidades
+      velocities[i * 3 + 0] = x * speedFactor;
+      velocities[i * 3 + 1] = y * speedFactor;
+      velocities[i * 3 + 2] = z * speedFactor;
+
+      // Tamaño aleatorio
+      sizes[i] = Math.random() * 0.3 + 0.1;
+    }
+
+    particlesGeometry.setAttribute(
+      "position",
+      new BufferAttribute(positions, 3)
+    );
+    particlesGeometry.setAttribute(
+      "velocity",
+      new BufferAttribute(velocities, 3)
+    );
+    particlesGeometry.setAttribute("size", new BufferAttribute(sizes, 1));
+
+    // Shaders
+    const vertexShader = `
+      attribute float size;
+      attribute vec3 velocity;
+      uniform float uTime;
+      varying vec3 vColor;
+      void main() {
+        vec3 newPosition = position + velocity * uTime; // Movimiento de partículas
+        float progress = uTime / 2.0; // Normalizar tiempo de vida
+        vColor = mix(vec3(1.0, 0.6, 0.0), vec3(0.0, 0.0, 1.0), progress); // Cambio de color
+        vec4 mvPosition = modelViewMatrix * vec4(newPosition, 1.0);
+        gl_PointSize = size * (300.0 / -mvPosition.z); // Ajustar tamaño con perspectiva
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `;
+
+    const fragmentShader = `
+      varying vec3 vColor;
+      uniform float uTime;
+      void main() {
+        float opacity = 1.0 - (uTime / 2.0); // Desvanecer con el tiempo
+        opacity = max(opacity, 0.0);
+        gl_FragColor = vec4(vColor, opacity);
+  
+        // Gradiente circular para simular brillo
+        float dist = length(gl_PointCoord - vec2(0.5));
+        if (dist > 0.5) discard; // Descartar píxeles fuera del punto
+        gl_FragColor.rgb *= 1.0 - dist; // Atenuar color en los bordes
+      }
+    `;
+
+    const particlesMaterial = new ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      uniforms: {
+        uTime: { value: 0 },
+      },
+    });
+
+    const particles = new Points(particlesGeometry, particlesMaterial);
+    this._scene.add(particles);
+
+    // Luz puntual
+    const light = new PointLight(0xffaa00, 1, 20);
+    light.position.copy(position);
+    this._scene.add(light);
+
+    // Sonido
+    const explosionSound = new Audio("/explosion.mp3");
+    explosionSound.play();
+
+    const lifetime = 2;
+    let elapsedTime = 0;
+
+    const animateParticles = () => {
+      elapsedTime += 0.016;
+
+      // Actualizar tiempo en el uniforme
+      particlesMaterial.uniforms.uTime.value = elapsedTime;
+
+      if (elapsedTime < lifetime) {
+        requestAnimationFrame(animateParticles);
+      } else {
+        this._scene.remove(particles);
+        this._scene.remove(light);
+        particlesGeometry.dispose();
+        particlesMaterial.dispose();
+      }
+    };
+
+    animateParticles();
+  }
+
   private checkCollisions() {
     const projectiles = this._vehicle.getProjectiles();
 
@@ -585,6 +813,7 @@ private toggleDirectionalAndHemisphereLight() {
         }, 200);
 
         if (this.cubeLives === 0) {
+          this.createExplosion(cube.position); // Generar explosión
           this._scene.remove(cube);
           this.obstaclesRemaining -= 1;
           this.updateOverlay(); // Actualizar la interfaz
@@ -609,6 +838,7 @@ private toggleDirectionalAndHemisphereLight() {
         }, 200);
 
         if (this.coneLives === 0) {
+          this.createExplosion(cone.position); // Generar explosión
           this._scene.remove(cone);
           this.obstaclesRemaining -= 1;
           this.updateOverlay(); // Actualizar la interfaz
@@ -633,6 +863,7 @@ private toggleDirectionalAndHemisphereLight() {
         }, 200);
 
         if (this.cylinderLives === 0) {
+          this.createExplosion(cylinder.position); // Generar explosión
           this._scene.remove(cylinder);
           this.obstaclesRemaining -= 1;
           this.updateOverlay(); // Actualizar la interfaz
