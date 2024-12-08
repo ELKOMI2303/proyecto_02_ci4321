@@ -1,0 +1,11 @@
+Model Information:
+* title:	Amx10rc
+* source:	https://sketchfab.com/3d-models/amx10rc-be56db6c7f7141e48b757725a3078d2d
+* author:	Wang Sh D (https://sketchfab.com/WandShD)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Amx10rc" (https://sketchfab.com/3d-models/amx10rc-be56db6c7f7141e48b757725a3078d2d) by Wang Sh D (https://sketchfab.com/WandShD) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

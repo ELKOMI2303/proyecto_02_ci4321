@@ -23,6 +23,8 @@ import {
   PointsMaterial,
   Points,
   ShaderMaterial,
+  Object3D,
+  Object3DEventMap,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import Vehicle from "../entyties/Vehicle";
@@ -31,6 +33,7 @@ import skybox from "../shapes/Skybox";
 import plane from "../shapes/plane";
 import cone from "../shapes/Cone";
 import cylinder from "../shapes/Cylinder";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 class GameScene {
   private static _instance = new GameScene();
@@ -73,6 +76,8 @@ class GameScene {
   private material = new SpriteMaterial({ map: this.map });
   private sprite = new Sprite(this.material);
   private currentNumber: number = 0;
+
+  private _3dObjects = new GLTFLoader();
 
   private timeSinceLastChange: number = 0; // Variable para contar el tiempo transcurrido
   private changeInterval: number = 1000; // Intervalo de cambio en milisegundos (puedes ajustarlo a la velocidad que desees)
@@ -117,6 +122,27 @@ class GameScene {
 
     this.createOverlayElements();
     window.addEventListener("resize", this.onResize);
+
+    const modelPath = "/amx10rc/scene.gltf";
+
+    this._3dObjects.load(
+      modelPath,
+      (gltf: { scene: any }) => {
+        // Añadir el modelo a la escena
+        const model = gltf.scene;
+        this._scene.add(model);
+
+        model.position.set(0, 12, 60);
+
+        console.log("Modelo cargado correctamente");
+      },
+      (xhr: { loaded: number; total: number }) => {
+        console.log(`Cargando: ${(xhr.loaded / xhr.total) * 100}% completado`);
+      },
+      (error: any) => {
+        console.error("Error al cargar el modelo:", error);
+      }
+    );
 
     this._vehicle = new Vehicle();
     this._scene.add(this._vehicle.group);
