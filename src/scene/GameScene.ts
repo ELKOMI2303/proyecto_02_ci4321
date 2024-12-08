@@ -557,118 +557,118 @@ class GameScene {
     this._camera.lookAt(vehiclePosition); // Asegúrate de que la cámara esté mirando al vehículo
   }
 
-  // private createExplosion(position: Vector3) {
-  //   const particleCount = 50;
-  //   const particlesGeometry = new BufferGeometry();
-  //   const positions = new Float32Array(particleCount * 3);
-  //   const velocities = new Float32Array(particleCount * 3);
-  //   const colors = new Float32Array(particleCount * 3);
-  //   const sizes = new Float32Array(particleCount);
-
-  //   const speedFactor = 0.3; // Controla la velocidad de las partículas
-
-  //   for (let i = 0; i < particleCount; i++) {
-  //     // Posiciones iniciales (centro de la explosión)
-  //     positions[i * 3 + 0] = position.x;
-  //     positions[i * 3 + 1] = position.y;
-  //     positions[i * 3 + 2] = position.z;
-
-  //     // Generar dirección aleatoria en una esfera
-  //     const theta = Math.random() * 2 * Math.PI; // Ángulo en el plano XZ
-  //     const phi = Math.acos(2 * Math.random() - 1); // Ángulo en el eje Y
-  //     const x = Math.sin(phi) * Math.cos(theta);
-  //     const y = Math.sin(phi) * Math.sin(theta);
-  //     const z = Math.cos(phi);
-
-  //     // Asignar velocidades escaladas
-  //     velocities[i * 3 + 0] -= x * speedFactor;
-  //     velocities[i * 3 + 1] -= y * speedFactor;
-  //     velocities[i * 3 + 2] -= z * speedFactor;
-
-  //     // Colores iniciales
-  //     colors[i * 3 + 0] = 1.0; // Rojo
-  //     colors[i * 3 + 1] = 0.6; // Verde
-  //     colors[i * 3 + 2] = 0.0; // Azul
-
-  //     // Tamaño aleatorio
-  //     sizes[i] = Math.random() * 0.3 + 0.1;
-  //   }
-
-  //   particlesGeometry.setAttribute(
-  //     "position",
-  //     new BufferAttribute(positions, 3)
-  //   );
-  //   particlesGeometry.setAttribute(
-  //     "velocity",
-  //     new BufferAttribute(velocities, 3)
-  //   );
-  //   particlesGeometry.setAttribute("color", new BufferAttribute(colors, 3));
-  //   particlesGeometry.setAttribute("size", new BufferAttribute(sizes, 3));
-
-  //   const particlesMaterial = new PointsMaterial({
-  //     vertexColors: true,
-  //     size: 0.2,
-  //     transparent: true,
-  //     opacity: 1.0,
-  //   });
-
-  //   const particles = new Points(particlesGeometry, particlesMaterial);
-  //   this._scene.add(particles);
-
-  //   // Luz puntual en la explosión
-  //   const light = new PointLight(0xffaa00, 1, 20);
-  //   light.position.copy(position);
-  //   this._scene.add(light);
-
-  //   // Sonido de explosión
-  //   const explosionSound = new Audio("/explosion.mp3");
-  //   explosionSound.play();
-
-  //   const lifetime = 2; // Segundos
-  //   let elapsedTime = 0;
-
-  //   const animateParticles = () => {
-  //     elapsedTime += 0.016;
-
-  //     const positions = particlesGeometry.attributes.position
-  //       .array as Float32Array;
-  //     const velocities = particlesGeometry.attributes.velocity
-  //       .array as Float32Array;
-  //     const colors = particlesGeometry.attributes.color.array as Float32Array;
-
-  //     // Actualiza posiciones con velocidad y gravedad
-  //     for (let i = 0; i < particleCount; i++) {
-  //       positions[i * 3 + 0] += velocities[i * 3 + 0] * 0.1; // x
-  //       positions[i * 3 + 1] += velocities[i * 3 + 1] * 0.1; // y
-  //       positions[i * 3 + 1] -= 0.01; // Gravedad
-  //       positions[i * 3 + 2] += velocities[i * 3 + 2] * 0.1; // z
-  //     }
-
-  //     // Cambiar colores a lo largo del tiempo
-  //     for (let i = 0; i < particleCount; i++) {
-  //       colors[i * 3 + 1] = Math.max(0, 1 - elapsedTime / lifetime); // Verde decrece
-  //       colors[i * 3 + 2] = elapsedTime / lifetime; // Azul aumenta
-  //     }
-
-  //     particlesMaterial.opacity = Math.max(0, 1 - elapsedTime / lifetime);
-
-  //     particlesGeometry.attributes.position.needsUpdate = true;
-  //     particlesGeometry.attributes.color.needsUpdate = true;
-
-  //     if (elapsedTime < lifetime) {
-  //       requestAnimationFrame(animateParticles);
-  //     } else {
-  //       this._scene.remove(particles);
-  //       this._scene.remove(light);
-  //       particlesGeometry.dispose();
-  //       particlesMaterial.dispose();
-  //     }
-  //   };
-
-  //   animateParticles();
-  // }
-
   private createExplosion(position: Vector3) {
+    const particleCount = 50;
+    const particlesGeometry = new BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const velocities = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+
+    const speedFactor = 0.3; // Controla la velocidad de las partículas
+
+    for (let i = 0; i < particleCount; i++) {
+      // Posiciones iniciales (centro de la explosión)
+      positions[i * 3 + 0] = position.x;
+      positions[i * 3 + 1] = position.y;
+      positions[i * 3 + 2] = position.z;
+
+      // Generar dirección aleatoria en una esfera
+      const theta = Math.random() * 2 * Math.PI; // Ángulo en el plano XZ
+      const phi = Math.acos(2 * Math.random() - 1); // Ángulo en el eje Y
+      const x = Math.sin(phi) * Math.cos(theta);
+      const y = Math.sin(phi) * Math.sin(theta);
+      const z = Math.cos(phi);
+
+      // Asignar velocidades escaladas
+      velocities[i * 3 + 0] -= x * speedFactor;
+      velocities[i * 3 + 1] -= y * speedFactor;
+      velocities[i * 3 + 2] -= z * speedFactor;
+
+      // Colores iniciales
+      colors[i * 3 + 0] = 1.0; // Rojo
+      colors[i * 3 + 1] = 0.6; // Verde
+      colors[i * 3 + 2] = 0.0; // Azul
+
+      // Tamaño aleatorio
+      sizes[i] = Math.random() * 0.3 + 0.1;
+    }
+
+    particlesGeometry.setAttribute(
+      "position",
+      new BufferAttribute(positions, 3)
+    );
+    particlesGeometry.setAttribute(
+      "velocity",
+      new BufferAttribute(velocities, 3)
+    );
+    particlesGeometry.setAttribute("color", new BufferAttribute(colors, 3));
+    particlesGeometry.setAttribute("size", new BufferAttribute(sizes, 3));
+
+    const particlesMaterial = new PointsMaterial({
+      vertexColors: true,
+      size: 0.2,
+      transparent: true,
+      opacity: 1.0,
+    });
+
+    const particles = new Points(particlesGeometry, particlesMaterial);
+    this._scene.add(particles);
+
+    // Luz puntual en la explosión
+    const light = new PointLight(0xffaa00, 1, 20);
+    light.position.copy(position);
+    this._scene.add(light);
+
+    // Sonido de explosión
+    const explosionSound = new Audio("/explosion.mp3");
+    explosionSound.play();
+
+    const lifetime = 2; // Segundos
+    let elapsedTime = 0;
+
+    const animateParticles = () => {
+      elapsedTime += 0.016;
+
+      const positions = particlesGeometry.attributes.position
+        .array as Float32Array;
+      const velocities = particlesGeometry.attributes.velocity
+        .array as Float32Array;
+      const colors = particlesGeometry.attributes.color.array as Float32Array;
+
+      // Actualiza posiciones con velocidad y gravedad
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3 + 0] += velocities[i * 3 + 0] * 0.1; // x
+        positions[i * 3 + 1] += velocities[i * 3 + 1] * 0.1; // y
+        positions[i * 3 + 1] -= 0.01; // Gravedad
+        positions[i * 3 + 2] += velocities[i * 3 + 2] * 0.1; // z
+      }
+
+      // Cambiar colores a lo largo del tiempo
+      for (let i = 0; i < particleCount; i++) {
+        colors[i * 3 + 1] = Math.max(0, 1 - elapsedTime / lifetime); // Verde decrece
+        colors[i * 3 + 2] = elapsedTime / lifetime; // Azul aumenta
+      }
+
+      particlesMaterial.opacity = Math.max(0, 1 - elapsedTime / lifetime);
+
+      particlesGeometry.attributes.position.needsUpdate = true;
+      particlesGeometry.attributes.color.needsUpdate = true;
+
+      if (elapsedTime < lifetime) {
+        requestAnimationFrame(animateParticles);
+      } else {
+        this._scene.remove(particles);
+        this._scene.remove(light);
+        particlesGeometry.dispose();
+        particlesMaterial.dispose();
+      }
+    };
+
+    animateParticles();
+  }
+
+  private createExplosionWhitShader(position: Vector3) {
     const particleCount = 50;
     const particlesGeometry = new BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
@@ -889,7 +889,7 @@ class GameScene {
         }, 200);
 
         if (this.cylinderLives === 0) {
-          this.createExplosion(cylinder.position); // Generar explosión
+          this.createExplosionWhitShader(cylinder.position); // Generar explosión
           this._scene.remove(cylinder);
           this.obstaclesRemaining -= 1;
           this.updateOverlay(); // Actualizar la interfaz
