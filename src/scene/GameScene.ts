@@ -64,7 +64,7 @@ class GameScene {
   private cubeEnergyBar!: Mesh;
   private coneEnergyBar!: Mesh;
   private cylinderEnergyBar!: Mesh;
-  private map = new TextureLoader().load("../../public/Numeros.png");
+  private map = new TextureLoader().load("/Numeros.png");
   private material = new SpriteMaterial({ map: this.map });
   private sprite = new Sprite(this.material);
   private currentNumber: number = 0;
