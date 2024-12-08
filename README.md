@@ -1,6 +1,7 @@
-**Proyecto 03**  
+# Proyecto 03
+
 **Curso:** CI4321 (2024)  
-**Puntuación Total:** 10 puntos  
+**Puntuación Total:** 20 puntos  
 **Alumnos:** Felix Arnos y Jonathan Bautista  
 **Carnets:** 15-10088 y 16-10109  
 **Fecha:** 2024-12-11
@@ -42,11 +43,12 @@ Asegúrate de tener Node.js instalado.
 Inicializar el proyecto:
 
 Ejecuta el siguiente comando en la terminal para inicializar un proyecto Node.js:
-`bash
-    npm init -y
-    `
 
-### Instalar dependencias:
+```bash
+    npm init -y
+```
+
+### Instalar dependencias
 
 Instala las dependencias ejecutando:
 
@@ -58,21 +60,23 @@ npm install --save three
 npm install --save-dev vite
 ```
 
-### Scripts personalizados:
+### Scripts personalizados
 
 Se agregaron los siguientes scripts al archivo package.json para facilitar el desarrollo y la ejecución del proyecto:
 
+```json
     "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
     }
+```
 
 - **npm run dev**: Ejecuta el servidor de desarrollo de Vite y abre el proyecto localmente.
 - **npm run build**: Genera la versión optimizada para producción.
 - **npm run preview**: Previsualiza la versión compilada del proyecto.
 
-### Correr el proyecto en modo desarrollo:
+### Correr el proyecto en modo desarrollo
 
 Para iniciar el servidor de desarrollo, ejecuta:
 
@@ -80,45 +84,44 @@ Para iniciar el servidor de desarrollo, ejecuta:
 npm run dev
 ```
 
-### Abrir el proyecto en el navegador:
+### Abrir el proyecto en el navegador
 
-Abre tu navegador y visita la dirección local que aparece en la terminal (por defecto suele ser http://localhost:5173).
+Abre tu navegador y visita la dirección local que aparece en la terminal (por defecto suele ser <http://localhost:5173>).
 
 ## Descripción de la Tarea
 
 El objetivo de este proyecto es desarrollar un programa de manera **individual** o **en pareja** sobre las bases del Proyecto 01. El programa debe simular un vehículo que interactúa con diversos tipos de obstáculos en un espacio 3D. Los obstáculos pueden ser eliminados mediante proyectiles disparados desde el vehículo, que debe ser controlado por teclado. Es fundamental incluir las instrucciones de control en el archivo README o en la pantalla del programa.
 
-### APIs a Utilizar:
+### APIs a Utilizar
 
 Puedes elegir entre **OpenGL**, **WebGL**, o **Three.js**. Si decides usar Three.js, solo se permitirá el uso de las APIs básicas para construcción manual de primitivas y operaciones matemáticas. No se permite el uso de módulos o funciones de Three.js que proporcionen ventajas significativas sobre OpenGL.
 
-## Evaluación:
+## Evaluación
 
-1. **Mapa de Texturas (8 pts):**
+1. **Iluminación  (10 pts):**
 
-   - Presentar al menos dos (2) elementos que tengan no sólo su textura mapeada correctamente con UVs, sino que también incluya su mapa de normales.
-   - Se recomienda utilizar un cubo u obstáculo que ya tengan avanzado para optimizar su tiempo, el otro tipo de objeto es de libre elección (no paralelogramo).
-   - Se recomienda cambiar ligeramente la rotación de la luz direccional en el tiempo para que sea obvio en el video y para la evaluación.
-     - Énfasis en ligeramente, no queremos que a nadie le dé un ataque de epilepsia o mareo por movimiento (motion sickness) xD
+   - Utilizar al menos dos (2) tipo de luz extra a la luz direccional que ya existe en el proyecto: spot light, point light, hemisphere light, rectarea light (estas dos últimas soportadas por Three.js y WebGL, no OpenGL 3).
+   - Ejemplos:
+     - Utilizar un botón que apague/reduzca la luz direccional y encienda una o dos spotlights en el vehículo.
+     - Tener point lights como fogatas o lámparas (no es necesario el fuego real, ojo).
+     - Instanciar point lights durante explosiones y apagarlas después de X segundos.
 
-2. **Interfaz gráfica sencilla (7 pt):**
-   - Presentar al menos dos (2) elementos en una interfaz gráfica de tipo Overlay.
-   - Uno de los elementos puede ser estático o dinámico, según la necesidad del programa o juego. Ejm:
-     - Barra de energía (dinámica con cambio de largo o masking).
-     - Repetir imágenes según algún contador como número de vidas (estático).
-   - Uno de los elementos debe estar basado en tipografía y creación/importación de mapa de sprites (también conocidos como atlas). Ejm:
-     - Número de vidas, obstáculos o proyectiles restantes.
-     - Mostrar grados del pitch del cañón.
-     - Pueden utilizar atlas ya existentes en Internet, pero la implementación de carga y rendering debe venir de ustedes o del helper de la tecnología del proyecto (Three.js / OpenGL / OGRE).
+2. **Partículas (10 pt):**
+   - Crear un pequeño sistema de partículas sencillo para darle vida a la escena.
+   - Ejemplos:
+     - Una cascada o río con partículas azules fluyendo en una dirección.
+     - Efecto de lluvia que siempre esté sobre la cámara (on/off).
+     - Efecto thruster en el vehículo al moverse.
+     - Instanciar una pequeña explosión al destruir los obstáculos.
 
 ## Consideraciones
 
-- **Fecha tope de entrega:** Lunes, 25 de Noviembre, a las 4:59 pm.
-- **Formato del repositorio GitHub:** `proyecto_02_ci4321.git`
+- **Fecha tope de entrega:** Miércoles, 11 de Diciembre, a las 4:59 pm.
+- **Formato del repositorio GitHub:** `proyecto_03_ci4321.git`
 - **Envío por correo electrónico a:**
-  - 10-87970@usb.ve
-  - Con copia a: depci-invitado2@usb.ve
-- **Asunto del correo:** `[ci4321] Proyecto 02`
+  - <10-87970@usb.ve>
+  - Con copia a: <depci-invitado2@usb.ve>
+- **Asunto del correo:** `[ci4321] Proyecto 03`
 - **Contenido del correo:**
   - Saludo con los **nombres** y **carnets** del equipo.
   - Enlace al **repositorio GitHub**.
